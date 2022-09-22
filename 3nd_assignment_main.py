@@ -5,185 +5,113 @@
 # moving object to perform the project with line detector
 # this code is used for the student only
 #########################################################################
-from SEN040134 import SEN040134_Tracking as Tracking_Sensor
-#########################################################################
-# Date: 2018/10/02
-# file name: car.py
-# Purpose: this code has been generated for the 4 wheels drive body
-# this code is used for the student only
-#########################################################################
-
-
-# =======================================================================
-# import GPIO library and time module
-# =======================================================================
-import RPi.GPIO as GPIO
-
-# =======================================================================
-# import ALL method in the SEN040134 Tracking Module
-# =======================================================================
-from SEN040134 import SEN040134_Tracking as Tracking_Sensor
-
-# =======================================================================
-# import ALL method in the TCS34725 RGB Module
-# =======================================================================
-from TCS34725 import TCS34725_RGB as RGB_Sensor
-
-# =======================================================================
-# import ALL method in the SR02 Ultrasonic Module
-# =======================================================================
-from SR02 import SR02_Supersonic as Supersonic_Sensor
-
-# =======================================================================
-# import ALL method in the PCA9685 Module
-# =======================================================================
-from PCA9685 import PCA9685 as PWM_Controller
-
-# =======================================================================
-# import ALL method in the rear/front Motor Module
-# =======================================================================
-import rear_wheels
-import front_wheels
-
-# =======================================================================
-#  set GPIO warnings as false
-# =======================================================================
-GPIO.setwarnings(False)
 
 from car import Car
+from BUZZER.Buzzer import Buzzer
 import time
+import threading
 
 
 class myCar(object):
 
     def __init__(self, car_name):
         self.car = Car(car_name)
+        self.buzzer = Buzzer()
 
     def drive_parking(self):
         self.car.drive_parking()
+        self.buzzer.finish = True
 
     # =======================================================================
     # 2ND_ASSIGNMENT_CODE
     # Complete the code to perform Second Assignment
     # =======================================================================
     def car_startup(self):
-        count = 0
-        Tracker = Tracking_Sensor.SEN040134_Tracking([16, 18, 22, 40, 32])
-        accelerator = rear_wheels.Rear_Wheels(db='config')
-        distance_detector = Supersonic_Sensor.Supersonic_Sensor(35)
-        distance = distance_detector.get_distance()        
-        accelerator.ready()
-        steering = front_wheels.Front_Wheels(db='config')
-        steering.ready()
-        accelerator.forward_with_speed(30)
-        while(True):
-            print(count)
-            distance = distance_detector.get_distance()
-            time.sleep(0.01)
-            if((distance < 15) and (distance > 5) and (distance != 6) and (distance != 7)):
-                print("distance", distance)
-                accelerator.stop()
-                time.sleep(0.1)
-                steering.turn(90)
-                time.sleep(0.1)
-                accelerator.backward_with_speed(30)
-                time.sleep(2)
-                steering.turn_left(35)
-                time.sleep(0.1)
-                accelerator.forward_with_speed(30)
-                time.sleep(1.5)
-                steering.turn(90)
-                time.sleep(1)                
-                steering.turn_right(135)
-                time.sleep(3)
-                steering.turn_right(135)
-                while(True):
-                    if(Tracker.is_in_line() == True):
-                        steering.turn(90)
-                        time.sleep(0.1)
-                        accelerator.stop()
-                        time.sleep(0.1)
-                        accelerator.forward_with_speed(30)
-                        time.sleep(1)
-                        break;
-            if(Tracker.read_digital() == [1,0,0,0,0]):
-                steering.turn_left(35)
-                time.sleep(0.1)
-                accelerator.forward_with_speed(30)
-                time.sleep(0.5)
-            elif((Tracker.read_digital() == [1,1,0,0,0])):
-                steering.turn_left(60)
-                time.sleep(0.1)
-            elif((Tracker.read_digital() == [0,1,0,0,0])):
-                steering.turn_left(50)
-                time.sleep(0.1)                
-            elif((Tracker.read_digital() == [1,1,1,0,0])):
-                steering.turn_left(75)
-                time.sleep(0.1)                
-            elif((Tracker.read_digital() == [0,1,1,0,0])):
-                steering.turn_left(80)
-                time.sleep(0.1)
-            elif((Tracker.read_digital() == [1,1,1,1,0])):
-                steering.turn_left(70)
-                time.sleep(0.1)
-            elif((Tracker.read_digital() == [1,0,0,1,0])):
-                steering.turn_left(80)
-                time.sleep(0.1)
-            elif((Tracker.read_digital() == [0,0,1,0,0]) or (Tracker.read_digital() == [0,1,0,1,0]) or (Tracker.read_digital() == [0,1,1,1,0])):
-                steering.turn(90)
-                time.sleep(0.1)
-            elif((Tracker.read_digital() == [0,0,0,0,1])):
-                steering.turn_right(135)
-                time.sleep(0.1)
-            elif((Tracker.read_digital() == [0,0,0,1,1])):
-                steering.turn_right(120)
-                time.sleep(0.1)
-            elif((Tracker.read_digital() == [0,0,1,1,1])):
-                steering.turn_right(110)
-                time.sleep(0.1)
-            elif((Tracker.read_digital() == [0,1,1,1,1])):
-                steering.turn_right(110)
-                time.sleep(0.1)                
-            elif((Tracker.read_digital() == [0,0,1,1,0])):
-                steering.turn_right(115)
-                time.sleep(0.1)
-            elif((Tracker.read_digital() == [0,0,0,1,0])):
-                steering.turn_right(125)
-                time.sleep(0.1)
-            elif((Tracker.read_digital() == [0,1,0,0,1])):
-                steering.turn_right(100)
-                time.sleep(0.1)    
-            elif((Tracker.read_digital() == [0,0,0,0,0])):
-                accelerator.stop()
-                time.sleep(0.1)
-                steering.turn(90)
-                while(True):
-                    print("Tracker.is_in_line : ", Tracker.is_in_line())
-                    time.sleep(0.1)
-                    accelerator.backward_with_speed(30)
-                    if(Tracker.is_in_line() == True):
-                        accelerator.stop()
-                        time.sleep(0.1)
-                        accelerator.forward_with_speed(20)
-                        break;
-            elif((Tracker.read_digital() == [1,1,1,1,1])):
-                count = count+1
-                if(count >= 3):
-                    break;
-                accelerator.forward_with_speed(30)
-                time.sleep(1)
-            else:
-                steering.turn(90)
-                time.sleep(0.1)
-        accelerator.stop()
-        accelerator.power_down()        
+        t = threading.Thread(target=self.buzzer.song)
+        t.start()
 
-
-                
+        INITIAL_SPEED = 30
+        SPEED = 30
+        self.car.steering.center_alignment()
+        self.car.accelerator.go_forward(SPEED)
         
-        # implement the assignment code here
-        pass
+        line_detector = self.car.line_detector
+        preLine = [0,0,0,0,0]
+        
+        count = 0
+        count_not_obs = 0
 
+        while count <= 2:
+
+            # 신호등 감지
+            rgb = self.car.color_getter.get_raw_data()
+            if rgb[0] > 700 and rgb[1] < 400 and rgb[2] < 400:
+                print("RED DETECTED!!")
+                self.car.accelerator.stop()
+                self.buzzer.stop = True
+                time.sleep(3)
+                self.car.accelerator.go_forward(SPEED)
+                time.sleep(0.5)
+
+            # 장애물 감지
+            distance = self.car.distance_detector.get_distance()
+            if 0 < distance < 30:
+                time.sleep(0.1)
+                if not self.car.distance_detector.get_distance() < 30: # 장애물을 재확인
+                    continue
+                print("Obstacle Detected")
+                SPEED = 40
+                self.car.accelerator.go_forward(SPEED)
+                self.buzzer.speed = 20 / SPEED
+                self.car.steering.turn(90-35) # 좌회전
+                while line_detector.is_in_line():
+                    continue
+                while not line_detector.is_in_line():
+                    continue
+                self.car.steering.turn(90+35) # 우회전
+                while line_detector.is_in_line():
+                    continue
+                while not line_detector.is_in_line():
+                    continue
+            else:
+                count_not_obs += 1
+                if count_not_obs == 8:
+                    if SPEED < 70:
+                        SPEED += 1
+                        print("SPEED", SPEED)
+                        self.car.accelerator.go_forward(SPEED)
+                        self.buzzer.speed = 20 / SPEED
+                    count_not_obs = 0
+
+            # 라인 벗어날 경우 (급커브)
+            if not line_detector.is_in_line():
+                print("Curve")
+                self.car.accelerator.stop()
+                self.car.steering.turn(90 + preLine[0] * 35 + preLine[4] * -35)
+                self.car.accelerator.go_backward(SPEED)
+                while not line_detector.is_in_line():
+                    continue
+                time.sleep(0.1)
+                self.car.accelerator.stop()
+                self.car.accelerator.go_forward(SPEED)
+
+            # 라인 트레이싱
+            line = line_detector.read_digital()
+            degree = [-20 if line[1] else -35, -5 if line[2] else -10, 0, 5 if line[2] else 10, 20 if line[3] else 35]
+            degree = [x*y for x, y in zip(line, degree)]
+            self.car.steering.turn(90 + sum(degree))
+            preLine = line
+
+            # 정지선 카운트
+            if [1,1,1,1,1] == line:
+                self.car.steering.center_alignment()
+                while line_detector.read_digital() == [1,1,1,1,1]:
+                    continue
+                count += 1
+                print("meet end", count)
+
+
+        self.drive_parking()
 
 if __name__ == "__main__":
     try:
